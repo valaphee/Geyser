@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.entity.type.player;
 
+import com.github.steveice10.mc.auth.data.GameProfile;
 import org.cloudburstmc.math.vector.Vector3f;
 import org.cloudburstmc.math.vector.Vector3i;
 import org.cloudburstmc.protocol.bedrock.data.GameType;
@@ -56,7 +57,7 @@ public class SkullPlayerEntity extends PlayerEntity {
     private Vector3i skullPosition;
 
     public SkullPlayerEntity(GeyserSession session, long geyserId) {
-        super(session, 0, geyserId, UUID.randomUUID(), Vector3f.ZERO, Vector3f.ZERO, 0, 0, 0, "", null);
+        super(session, 0, geyserId, Vector3f.ZERO, Vector3f.ZERO, 0, 0, 0, new GameProfile(UUID.randomUUID(), ""));
     }
 
     @Override

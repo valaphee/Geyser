@@ -49,7 +49,7 @@ public class JavaGameProfileTranslator extends PacketTranslator<ClientboundGameP
 
         // Required, or else Floodgate players break with Spigot chunk caching
         GameProfile profile = packet.getProfile();
-        playerEntity.setUsername(profile.getName());
+        playerEntity.setProfile(profile);
         playerEntity.setUuid(profile.getId());
 
         session.getGeyser().getSessionManager().addSession(playerEntity.getUuid(), session);

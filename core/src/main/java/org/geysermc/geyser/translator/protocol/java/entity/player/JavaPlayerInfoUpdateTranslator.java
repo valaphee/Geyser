@@ -79,12 +79,10 @@ public class JavaPlayerInfoUpdateTranslator extends PacketTranslator<Clientbound
                             session,
                             -1,
                             session.getEntityCache().getNextEntityId().incrementAndGet(),
-                            id,
                             Vector3f.ZERO,
                             Vector3f.ZERO,
                             0, 0, 0,
-                            name,
-                            texturesProperty
+                            profile
                     );
 
                     session.getEntityCache().addPlayerEntity(playerEntity);

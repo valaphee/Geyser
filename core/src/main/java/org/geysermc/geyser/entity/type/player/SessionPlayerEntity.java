@@ -70,7 +70,7 @@ public class SessionPlayerEntity extends PlayerEntity {
     private boolean isRidingInFront;
 
     public SessionPlayerEntity(GeyserSession session) {
-        super(session, -1, 1, null, Vector3f.ZERO, Vector3f.ZERO, 0, 0, 0, null, null);
+        super(session, -1, 1, Vector3f.ZERO, Vector3f.ZERO, 0, 0, 0, null);
 
         valid = true;
     }

@@ -976,6 +976,7 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
                 }
 
                 UUID uuid = protocol.getProfile().getId();
+                GameProfile profile;
                 if (uuid == null) {
                     // Set what our UUID *probably* is going to be
                     if (remoteServer.authType() == AuthType.FLOODGATE) {
@@ -983,9 +984,12 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
                     } else {
                         uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + protocol.getProfile().getName()).getBytes(StandardCharsets.UTF_8));
                     }
+                    profile = new GameProfile(uuid, protocol.getProfile().getName());
+                } else {
+                    profile = protocol.getProfile();
                 }
                 playerEntity.setUuid(uuid);
-                playerEntity.setUsername(protocol.getProfile().getName());
+                playerEntity.setProfile(profile);
 
                 String locale = clientData.getLanguageCode();
 

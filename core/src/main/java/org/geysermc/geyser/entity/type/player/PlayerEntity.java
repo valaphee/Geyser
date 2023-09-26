@@ -25,6 +25,7 @@
 
 package org.geysermc.geyser.entity.type.player;
 
+import com.github.steveice10.mc.auth.data.GameProfile;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.EntityMetadata;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.Pose;
 import com.github.steveice10.mc.protocol.data.game.entity.metadata.type.BooleanEntityMetadata;
@@ -58,10 +59,7 @@ import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.text.MessageTranslator;
 import org.geysermc.geyser.util.ChunkUtils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Getter @Setter
@@ -78,13 +76,7 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
         BASE_ABILITY_LAYER = Collections.singletonList(abilityLayer);
     }
 
-    private String username;
-
-    /**
-     * The textures property from the GameProfile.
-     */
-    @Nullable
-    private String texturesProperty;
+    private GameProfile profile;
 
     @Nullable
     private Vector3i bedPosition;
@@ -98,13 +90,26 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
      */
     private ParrotEntity rightParrot;
 
-    public PlayerEntity(GeyserSession session, int entityId, long geyserId, UUID uuid, Vector3f position,
-                        Vector3f motion, float yaw, float pitch, float headYaw, String username, @Nullable String texturesProperty) {
-        super(session, entityId, geyserId, uuid, EntityDefinitions.PLAYER, position, motion, yaw, pitch, headYaw);
+    public PlayerEntity(GeyserSession session, int entityId, long geyserId, Vector3f position,
+                        Vector3f motion, float yaw, float pitch, float headYaw, GameProfile profile) {
+        super(session, entityId, geyserId, profile != null ? profile.getId() : null, EntityDefinitions.PLAYER, position, motion, yaw, pitch, headYaw);
 
-        this.username = username;
-        this.nametag = username;
-        this.texturesProperty = texturesProperty;
+        this.profile = profile;
+    }
+
+    public String getUsername() {
+        return profile.getName();
+    }
+
+    public String getTexturesProperty() {
+        GameProfile.Property textures = profile.getProperty("textures");
+        return textures == null ? null : textures.getValue();
+    }
+
+    public void setTexturesProperty(String texturesProperty) {
+        List<GameProfile.Property> properties = new ArrayList<>(profile.getProperties());
+        properties.add(new GameProfile.Property("textures", texturesProperty));
+        profile.setProperties(properties);
     }
 
     @Override
@@ -123,13 +128,13 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
         }
 
         // Update in case this entity has been despawned, then respawned
-        this.nametag = this.username;
+        this.nametag = getUsername();
         // The name can't be updated later (the entity metadata for it is ignored), so we need to check for this now
-        updateDisplayName(session.getWorldCache().getScoreboard().getTeamFor(username));
+        updateDisplayName(session.getWorldCache().getScoreboard().getTeamFor(getUsername()));
 
         AddPlayerPacket addPlayerPacket = new AddPlayerPacket();
         addPlayerPacket.setUuid(uuid);
-        addPlayerPacket.setUsername(username);
+        addPlayerPacket.setUsername(getUsername());
         addPlayerPacket.setRuntimeEntityId(geyserId);
         addPlayerPacket.setUniqueEntityId(geyserId);
         addPlayerPacket.setPosition(position.sub(0, definition.offset(), 0));
@@ -351,7 +356,7 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
                 // We have to emulate what modern Java text already does for us and add the color to each section
                 String prefix = team.getCurrentData().getPrefix();
                 String suffix = team.getCurrentData().getSuffix();
-                newDisplayName = chatColor + prefix + chatColor + this.username + chatColor + suffix;
+                newDisplayName = chatColor + prefix + chatColor + getUsername() + chatColor + suffix;
             } else {
                 // The name is not visible to the session player; clear name
                 newDisplayName = "";
@@ -360,8 +365,8 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
             this.nametag = newDisplayName;
         } else {
             // The name has reset, if it was previously something else
-            needsUpdate = !this.nametag.equals(this.username);
-            this.nametag = this.username;
+            needsUpdate = !this.nametag.equals(getUsername());
+            this.nametag = getUsername();
         }
 
         if (needsUpdate) {
@@ -403,7 +408,7 @@ public class PlayerEntity extends LivingEntity implements GeyserPlayerEntity {
     public void setBelowNameText(Objective objective) {
         if (objective != null && objective.getUpdateType() != UpdateType.REMOVE) {
             int amount;
-            Score score = objective.getScores().get(username);
+            Score score = objective.getScores().get(getUsername());
             if (score != null) {
                 amount = score.getCurrentData().getScore();
             } else {
